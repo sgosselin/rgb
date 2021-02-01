@@ -49,6 +49,7 @@ pub struct Mmu {
     is_bios_mapped: bool,
     vram: [u8; VRAM_LEN],
     wram: [u8; WRAM_LEN],
+    zram: [u8; ZRAM_LEN],
 }
 
 impl Mmu {
