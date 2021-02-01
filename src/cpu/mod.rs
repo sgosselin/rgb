@@ -5,4 +5,5 @@ mod opcode;
 pub use self::opcode::Opcode;
 
 mod regs;
+pub use self::regs::Flag;
 pub use self::regs::Regs;

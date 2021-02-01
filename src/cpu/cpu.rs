@@ -1,4 +1,4 @@
-use crate::cpu::{Opcode, Regs};
+use crate::cpu::{Flag, Opcode, Regs};
 use crate::dbg::log;
 use crate::mem::{Mmu};
 
@@ -78,6 +78,13 @@ impl Cpu {
                 let nn = self._fetch_next_word(mmu);
                 self._set_r16_from_rp(mmu, opcode.p(), nn);
             },
+            (2, 5, _, _, _) => { // XOR r[z]
+                self.regs.a ^= self._get_r8_from_r(mmu, opcode.z());
+                self.regs.set_flag(Flag::Z, self.regs.a == 0);
+                self.regs.set_flag(Flag::N, false);
+                self.regs.set_flag(Flag::H, false);
+                self.regs.set_flag(Flag::C, false);
+            },
             _ => {
                 self._panic("un-prefixed opcode not implemented");
             },
@@ -86,13 +93,27 @@ impl Cpu {
         return ncycles;
     }
 
-    fn _set_r16_from_rp(&mut self, mmu: &mut Mmu, rp_p: u8, val: u16) {
-        match rp_p {
+    fn _get_r8_from_r(&self, mmu: &Mmu, r: u8) -> u8 {
+        return match r {
+            0 => self.regs.b,
+            1 => self.regs.c,
+            2 => self.regs.d,
+            3 => self.regs.e,
+            4 => self.regs.h,
+            5 => self.regs.l,
+            6 => mmu.read_byte(self.regs.hl()),
+            7 => self.regs.a,
+            _ => panic!("impossible <r> index"),
+        };
+    }
+
+    fn _set_r16_from_rp(&mut self, mmu: &mut Mmu, rp: u8, val: u16) {
+        match rp {
             0 => self.regs.set_bc(val),
             1 => self.regs.set_de(val),
             2 => self.regs.set_hl(val),
             3 => self.regs.sp = val,
-            _ => self._panic("impossible <rp_p> index"),
+            _ => self._panic("impossible <rp> index"),
         };
     }
 
