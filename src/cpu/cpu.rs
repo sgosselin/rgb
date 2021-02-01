@@ -101,6 +101,17 @@ impl Cpu {
                 mmu.write_byte(self.regs.hl(), self.regs.a);
                 self.regs.dec_hl();
             },
+            (0, _, 4, _, _) => { // INC r[y]
+                let r = u8::wrapping_add(self._get_r8_from_r(mmu, opcode.y()), 1);
+                self._set_r8_from_r(mmu, opcode.y(), r);
+                self.regs.set_flag(Flag::Z, r == 0);
+                self.regs.set_flag(Flag::N, false);
+                self.regs.set_flag(Flag::H, (r & 0x0f) == 0x0f);
+            },
+            (0, _, 6, _, _) => { // LD r[y], n
+                let n = self._fetch_next_byte(mmu);
+                self._set_r8_from_r(mmu, opcode.y(), n);
+            },
             (0, 4..=7, 0, _, _) => { // JR cc[y-4], d
                 let d8 = self._fetch_next_byte(mmu) as i8;
                 let pc = i32::wrapping_add(self.regs.pc as i32, d8 as i32) as u16;
@@ -119,6 +130,9 @@ impl Cpu {
             },
             (3, 1, 3, _, _) => {
                 self.next_opcode_is_cb = true;
+            },
+            (3, 4, 2, _, _) => { // LD (0xff00 + C),A
+                mmu.write_byte(0xff00 + (self.regs.c as u16), self.regs.a);
             },
             _ => {
                 self._panic("un-prefixed opcode not implemented");
@@ -150,6 +164,20 @@ impl Cpu {
             5 => self.regs.l,
             6 => mmu.read_byte(self.regs.hl()),
             7 => self.regs.a,
+            _ => panic!("impossible <r> index"),
+        };
+    }
+
+    fn _set_r8_from_r(&mut self, mmu: &mut Mmu, r: u8, val: u8) {
+        match r {
+            0 => self.regs.b = val,
+            1 => self.regs.c = val,
+            2 => self.regs.d = val,
+            3 => self.regs.e = val,
+            4 => self.regs.h = val,
+            5 => self.regs.l = val,
+            6 => mmu.write_byte(self.regs.hl(), val),
+            7 => self.regs.a = val,
             _ => panic!("impossible <r> index"),
         };
     }
