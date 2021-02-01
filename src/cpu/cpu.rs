@@ -138,6 +138,10 @@ impl Cpu {
             (3, 1, 3, _, _) => {
                 self.next_opcode_is_cb = true;
             },
+            (3, 4, 0, _, _) => { // LD (0xff00 + n),A
+                let n = self._fetch_next_byte(mmu) as u16;
+                mmu.write_byte(0xff00 + n, self.regs.a);
+            },
             (3, 4, 2, _, _) => { // LD (0xff00 + C),A
                 mmu.write_byte(0xff00 + (self.regs.c as u16), self.regs.a);
             },
