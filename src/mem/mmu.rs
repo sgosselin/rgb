@@ -4,12 +4,17 @@ use super::bios::{BIOS};
 const BIOS_BEG_ADDR: u16 = 0x0000;
 const BIOS_END_ADDR: u16 = 0x00FF;
 
+const VRAM_BEG_ADDR: u16 = 0x8000;
+const VRAM_END_ADDR: u16 = 0x9fff;
+const VRAM_LEN:usize = (VRAM_END_ADDR - VRAM_BEG_ADDR + 1) as usize;
+
 const WRAM_BEG_ADDR: u16 = 0xc000;
 const WRAM_END_ADDR: u16 = 0xdfff;
 const WRAM_LEN:usize = (WRAM_END_ADDR - WRAM_BEG_ADDR + 1) as usize;
 
 pub struct Mmu {
     is_bios_mapped: bool,
+    vram: [u8; VRAM_LEN],
     wram: [u8; WRAM_LEN],
 }
 
@@ -18,6 +23,7 @@ impl Mmu {
     pub fn new() -> Mmu {
         return Mmu {
             is_bios_mapped: true,
+            vram: [0x00; VRAM_LEN],
             wram: [0x00; WRAM_LEN],
         };
     }
@@ -36,6 +42,9 @@ impl Mmu {
         let res = match (self.is_bios_mapped, addr) {
             (true, BIOS_BEG_ADDR..=BIOS_END_ADDR) => {
                 BIOS[(addr - BIOS_BEG_ADDR) as usize]
+            },
+            (_, VRAM_BEG_ADDR..=VRAM_END_ADDR) => {
+                self.vram[(addr - VRAM_BEG_ADDR) as usize]
             },
             (_, WRAM_BEG_ADDR..=WRAM_END_ADDR) => {
                 self.wram[(addr - WRAM_BEG_ADDR) as usize]
@@ -65,6 +74,9 @@ impl Mmu {
     /// Writes |d8| into memory at |addr|.
     pub fn write_byte(&mut self, addr: u16, val: u8) {
         match addr {
+            VRAM_BEG_ADDR..=VRAM_END_ADDR => {
+                self.vram[(addr - VRAM_BEG_ADDR) as usize] = val;
+            },
             WRAM_BEG_ADDR..=WRAM_END_ADDR => {
                 self.wram[(addr - WRAM_BEG_ADDR) as usize] = val;
             },
