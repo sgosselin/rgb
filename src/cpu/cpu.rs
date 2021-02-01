@@ -141,6 +141,11 @@ impl Cpu {
                 self.regs.set_flag(Flag::H, false);
                 self.regs.set_flag(Flag::C, false);
             },
+            (3, _, 5, 0, 1) => { // CALL nn
+                let nn = self._fetch_next_word(mmu);
+                self._stack_push(mmu, self.regs.pc);
+                self.regs.pc = nn;
+            },
             (3, 1, 3, _, _) => {
                 self.next_opcode_is_cb = true;
             },
@@ -215,7 +220,7 @@ impl Cpu {
     }
 
     fn _stack_pop(&mut self, mmu: &mut Mmu) -> u16 {
-        let res = self.read_word(self.regs.sp);
+        let res = mmu.read_word(self.regs.sp);
         self.regs.sp = u16::wrapping_add(self.regs.sp, 2);
         return res;
     }
