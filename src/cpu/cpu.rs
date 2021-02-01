@@ -76,7 +76,7 @@ impl Cpu {
 
         match (opcode.x(), opcode.y()) {
             (0, 2) => { // RL r[z]
-                let n = self._alu_rl_d8(self._get_r8_from_r(mmu, opcode.z()));
+                let n = self._alu_rl(self._get_r8_from_r(mmu, opcode.z()));
                 self._set_r8_from_r(mmu, opcode.z(), n);
             },
             (1, _) => { // BIT y, r[z]
@@ -147,7 +147,7 @@ impl Cpu {
                 self._set_r8_from_r(mmu, opcode.y(), n);
             },
             (0, 2, 7, _, _) => { // RLA
-                let n = self._alu_rl_d8(self.regs.a);
+                let n = self._alu_rl(self.regs.a);
                 self._set_r8_from_r(mmu, opcode.z(), n);
             },
             (0, 4..=7, 0, _, _) => { // JR cc[y-4], d
@@ -167,6 +167,7 @@ impl Cpu {
                 self._set_r8_from_r(mmu, opcode.y(), r);
             }
             (2, 5, _, _, _) => { // XOR r[z]
+                // TODO: create an _alu_xor() function for test purposes.
                 self.regs.a ^= self._get_r8_from_r(mmu, opcode.z());
                 self.regs.set_flag(Flag::Z, self.regs.a == 0);
                 self.regs.set_flag(Flag::N, false);
@@ -199,6 +200,10 @@ impl Cpu {
             (3, 4, 2, _, _) => { // LD (0xff00 + C),A
                 mmu.write_byte(0xff00 + (self.regs.c as u16), self.regs.a);
             },
+            (3, 7, _, _, _) => { // CP d8
+                let n = self._fetch_next_byte(mmu);
+                self._alu_cp(n);
+            },
             _ => {
                 self._panic("un-prefixed opcode not implemented");
             },
@@ -207,7 +212,14 @@ impl Cpu {
         return ncycles;
     }
 
-    fn _alu_rl_d8(&mut self, d8: u8) -> u8 {
+    fn _alu_cp(&mut self, d8: u8) {
+        // CP is basically (a - n) but the result is discarded.
+        let prev_a = self.regs.a;
+        self._alu_sub(d8, false);
+        self.regs.a = prev_a;
+    }
+
+    fn _alu_rl(&mut self, d8: u8) -> u8 {
         let c = ((d8 & 0x80) >> 7) == 0x01;
         let r = ((d8 << 1) + u8::from(self.regs.get_flag(Flag::C)));
         self.regs.set_flag(Flag::Z, r == 0x00);
@@ -216,6 +228,17 @@ impl Cpu {
         self.regs.set_flag(Flag::H, false);
 
         return r;
+    }
+
+    fn _alu_sub(&mut self, d8: u8, use_carry: bool) {
+        let c = if use_carry && self.regs.get_flag(Flag::C) { 1 } else { 0 };
+	let a = self.regs.a;
+	let r = a.wrapping_sub(d8).wrapping_sub(c);
+
+	self.regs.set_flag(Flag::Z, r == 0);
+	self.regs.set_flag(Flag::H, (a & 0x0f) < ((d8 & 0x0f) + c));
+	self.regs.set_flag(Flag::N, true);
+	self.regs.set_flag(Flag::C, (a as u16) < ((d8 as u16) + (c as u16)));
     }
 
     fn _get_res_from_cc(&self, cc: u8) -> bool {
