@@ -156,6 +156,10 @@ impl Cpu {
                 self.regs.set_flag(Flag::H, false);
                 self.regs.set_flag(Flag::C, false);
             },
+            (3, _, 1, _, 0) => { // POP rp2[p]
+                let nn = self._stack_pop(mmu);
+                self._set_r16_from_rp2(mmu, opcode.p(), nn);
+            },
             (3, _, 5, 0, 1) => { // CALL nn
                 let nn = self._fetch_next_word(mmu);
                 self._stack_push(mmu, self.regs.pc);
