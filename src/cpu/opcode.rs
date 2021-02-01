@@ -19,9 +19,9 @@ pub struct Opcode {
 impl Opcode {
     pub fn from(is_cb: bool, value: u8) -> Option<&'static Opcode> {
         return if is_cb {
-            return TABLE_CB_PREFIXED[value as usize].as_ref()
+            TABLE_CB_PREFIXED[value as usize].as_ref()
         } else {
-            return TABLE_UN_PREFIXED[value as usize].as_ref()
+            TABLE_UN_PREFIXED[value as usize].as_ref()
         };
     }
 

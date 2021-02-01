@@ -121,6 +121,11 @@ impl Cpu {
                 mmu.write_byte(self.regs.hl(), self.regs.a);
                 self.regs.dec_hl();
             },
+            (0, _, 3, _, 0) => { // INC rp[p]
+                let nn = self._get_r16_from_rp(mmu, opcode.p());
+                let rp = u16::wrapping_add(nn, 1);
+                self._set_r16_from_rp(mmu, opcode.p(), rp);
+            },
             (0, _, 4, _, _) => { // INC r[y]
                 let n = self._get_r8_from_r(mmu, opcode.y());
                 let r = u8::wrapping_add(n, 1);
@@ -361,4 +366,20 @@ mod tests {
         assert_eq!(cpu.regs.get_flag(Flag::H), true);
     }
 
+    #[test]
+    fn test_inc_rp() {
+        let mut mmu = Mmu::new();
+        let mut cpu = Cpu::new();
+        let opcode_inc_hl = Opcode::from(false, 0x23).unwrap();
+
+        cpu.regs.set_hl(0x0000);
+        cpu._run_opcode_un(&mut mmu, opcode_inc_hl);
+        assert_eq!(cpu.regs.hl(), 0x0001);
+        cpu.regs.set_hl(0x00ff);
+        cpu._run_opcode_un(&mut mmu, opcode_inc_hl);
+        assert_eq!(cpu.regs.hl(), 0x0100);
+        cpu.regs.set_hl(0xffff);
+        cpu._run_opcode_un(&mut mmu, opcode_inc_hl);
+        assert_eq!(cpu.regs.hl(), 0x0000);
+    }
 }
