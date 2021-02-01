@@ -167,12 +167,8 @@ impl Cpu {
                 self._set_r8_from_r(mmu, opcode.y(), r);
             }
             (2, 5, _, _, _) => { // XOR r[z]
-                // TODO: create an _alu_xor() function for test purposes.
-                self.regs.a ^= self._get_r8_from_r(mmu, opcode.z());
-                self.regs.set_flag(Flag::Z, self.regs.a == 0);
-                self.regs.set_flag(Flag::N, false);
-                self.regs.set_flag(Flag::H, false);
-                self.regs.set_flag(Flag::C, false);
+                let r = self._get_r8_from_r(mmu, opcode.z());
+                self._alu_xor(r);
             },
             (3, _, 1, 0, 1) => { // RET
                 self.regs.pc = self._stack_pop(mmu);
@@ -239,6 +235,14 @@ impl Cpu {
 	self.regs.set_flag(Flag::H, (a & 0x0f) < ((d8 & 0x0f) + c));
 	self.regs.set_flag(Flag::N, true);
 	self.regs.set_flag(Flag::C, (a as u16) < ((d8 as u16) + (c as u16)));
+    }
+
+    fn _alu_xor(&mut self, d8: u8) {
+        self.regs.a ^= d8;
+        self.regs.set_flag(Flag::Z, self.regs.a == 0);
+        self.regs.set_flag(Flag::N, false);
+        self.regs.set_flag(Flag::H, false);
+        self.regs.set_flag(Flag::C, false);
     }
 
     fn _get_res_from_cc(&self, cc: u8) -> bool {
