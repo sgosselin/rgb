@@ -146,6 +146,10 @@ impl Cpu {
                 self._stack_push(mmu, self.regs.pc);
                 self.regs.pc = nn;
             },
+            (3, _, 5, _, 0) => { // PUSH rp2[p]
+                let nn = self._get_r16_from_rp2(mmu, opcode.p());
+                self._stack_push(mmu, nn);
+            },
             (3, 1, 3, _, _) => {
                 self.next_opcode_is_cb = true;
             },
@@ -190,6 +194,16 @@ impl Cpu {
         };
     }
 
+    fn _get_r16_from_rp2(&mut self, mmu: &mut Mmu, rp2: u8) -> u16 {
+        return match rp2 {
+            0 => self.regs.bc(),
+            1 => self.regs.de(),
+            2 => self.regs.hl(),
+            3 => self.regs.af(),
+            _ => panic!("impossible <rp2> index")
+        };
+    }
+
     fn _set_r8_from_r(&mut self, mmu: &mut Mmu, r: u8, val: u8) {
         match r {
             0 => self.regs.b = val,
@@ -211,6 +225,16 @@ impl Cpu {
             2 => self.regs.set_hl(val),
             3 => self.regs.sp = val,
             _ => self._panic("impossible <rp> index"),
+        };
+    }
+
+    fn _set_r16_from_rp2(&mut self, mmu: &mut Mmu, rp2: u8, val: u16) {
+        match rp2 {
+            0 => self.regs.set_bc(val),
+            1 => self.regs.set_de(val),
+            2 => self.regs.set_hl(val),
+            3 => self.regs.set_af(val),
+            _ => panic!("impossible <rp2> index")
         };
     }
 

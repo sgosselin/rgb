@@ -58,6 +58,11 @@ impl Regs {
         self.h = msb; self.l = lsb;
     }
 
+    pub fn set_af(&mut self, raw: u16) {
+        self.a = ((raw & 0xff00) >> 8) as u8;
+        self.f = (raw & 0x00ff) as u8;
+    }
+
     pub fn set_bc(&mut self, raw: u16) {
         self.b = ((raw & 0xff00) >> 8) as u8;
         self.c = (raw & 0x00ff) as u8;
@@ -142,6 +147,10 @@ mod tests {
         regs.set_hl(0x5060);
         assert_eq!(regs.h, 0x50);
         assert_eq!(regs.l, 0x60);
+
+        regs.set_af(0x7080);
+        assert_eq!(regs.a, 0x70);
+        assert_eq!(regs.f, 0x80);
     }
 
     #[test]
