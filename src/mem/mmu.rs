@@ -73,6 +73,8 @@ impl Mmu {
         self.is_bios_mapped = false;
     }
 
+    /// Reads a word from memory at |addr|; returns 0x00 if the
+    /// memory region is unmapped.
     pub fn read_byte(&self, addr: u16) -> u8 {
         let res = match (self.is_bios_mapped, addr) {
             (true, BIOS_BEG_ADDR..=BIOS_END_ADDR) => {
@@ -105,6 +107,8 @@ impl Mmu {
         return res;
     }
 
+    /// Reads a word from memory at |addr|; returns 0x0000 if the
+    /// memory region is unmapped.
     pub fn read_word(&self, addr: u16) -> u16 {
         let lsb = self.read_byte(addr) as u16;
         let msb = self.read_byte(addr + 1) as u16;
