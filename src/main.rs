@@ -9,5 +9,8 @@ mod vid;
 fn main() {
     let mut cpu = cpu::Cpu::new();
     let mut mmu = mem::Mmu::new();
-    cpu.step(&mut mmu);
+
+    loop {
+        cpu.step(&mut mmu);
+    }
 }
