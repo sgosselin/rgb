@@ -353,8 +353,6 @@ impl Cpu {
 mod tests {
     use super::*;
 
-    // TODO: write tests for each opcodes.
-
     #[test]
     fn test_dec_ry() {
         let mut mmu = Mmu::new();
