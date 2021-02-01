@@ -101,6 +101,15 @@ impl Cpu {
                 mmu.write_byte(self.regs.hl(), self.regs.a);
                 self.regs.dec_hl();
             },
+            (0, 4..=7, 0, _, _) => { // JR cc[y-4], d
+                let d8 = self._fetch_next_byte(mmu) as i8;
+                let pc = i32::wrapping_add(self.regs.pc as i32, d8 as i32) as u16;
+                if self._get_res_from_cc(opcode.y() - 4) {
+                    self.regs.pc = pc;
+                } else {
+                    ncycles = opcode.ncycles.1;
+                }
+            },
             (2, 5, _, _, _) => { // XOR r[z]
                 self.regs.a ^= self._get_r8_from_r(mmu, opcode.z());
                 self.regs.set_flag(Flag::Z, self.regs.a == 0);
@@ -117,6 +126,18 @@ impl Cpu {
         };
 
         return ncycles;
+    }
+
+    fn _get_res_from_cc(&self, cc: u8) -> bool {
+        let res = match cc {
+            0 => self.regs.get_flag(Flag::Z) == false,
+            1 => self.regs.get_flag(Flag::Z) != false,
+            2 => self.regs.get_flag(Flag::C) == false,
+            3 => self.regs.get_flag(Flag::C) != false,
+            _ => panic!("impossible <cc> index"),
+        };
+
+        return res;
     }
 
     fn _get_r8_from_r(&self, mmu: &Mmu, r: u8) -> u8 {
