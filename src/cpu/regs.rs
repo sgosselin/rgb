@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Copy, Clone)]
 // TODO: document flags.
 pub enum Flag {
@@ -88,6 +90,24 @@ impl Regs {
 
     pub fn get_flag(&self, flag: Flag) -> bool {
         (self.f & (flag as u8)) != 0
+    }
+}
+
+impl fmt::Display for Regs {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "regs( ");
+        write!(f, "a=0x{:02x} f=0x{:02x} b=0x{:02x} c=0x{:02x} ",
+            self.a, self.f, self.b, self.c);
+        write!(f, "d=0x{:02x} e=0x{:02x} h=0x{:02x} l=0x{:02x} ",
+            self.d, self.e, self.h, self.l);
+        write!(f, "pc=0x{:04x} sp=0x{:04x} ",
+            self.pc, self.sp);
+        let z_s = if self.get_flag(Flag::Z) { "Z" } else { "_" };
+        let n_s = if self.get_flag(Flag::N) { "N" } else { "_" };
+        let h_s = if self.get_flag(Flag::H) { "H" } else { "_" };
+        let c_s = if self.get_flag(Flag::C) { "C" } else { "_" };
+        write!(f, "flag:{}{}{}{}", z_s, n_s, h_s, c_s);
+        write!(f, " )")
     }
 }
 

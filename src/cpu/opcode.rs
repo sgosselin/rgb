@@ -1,3 +1,5 @@
+use std::fmt;
+
 /// Represents an opcode for the LR35902 CPU.
 #[derive(Debug)]
 pub struct Opcode {
@@ -28,6 +30,16 @@ impl Opcode {
     pub fn z(&self) -> u8 { self.value & 0b0000_0111 }
     pub fn p(&self) -> u8 { (self.value & 0b0011_0000) >> 4 }
     pub fn q(&self) -> u8 { (self.value & 0b0000_1000) >> 3 }
+}
+
+impl fmt::Display for Opcode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "opcode( is_cb:{}", if self.is_cb { "T" } else { "F" });
+        write!(f, ", value=0x{:02x}", self.value);
+        write!(f, ", ncycles=({:2},{:2})", self.ncycles.0, self.ncycles.1);
+        write!(f, ", mnemo='{:10}'", self.mnemo);
+        write!(f, " )")
+    }
 }
 
 // =======================================================================

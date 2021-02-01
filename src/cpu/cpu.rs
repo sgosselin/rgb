@@ -45,7 +45,7 @@ impl Cpu {
             self._run_opcode_un(mmu, self.curr_opcode.unwrap())
         };
 
-        log::info("cpu", "step", &format!("{:x?},  {:0x?})",
+        log::info("cpu", "step", &format!("executed_opcode={}, regs={}",
             self.curr_opcode.unwrap(), self.regs));
 
         return res;
