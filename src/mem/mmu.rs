@@ -1,16 +1,49 @@
 use crate::dbg::log;
 use super::bios::{BIOS};
 
+// BIOS:
+//
+// When the GameBoy boots up, the BIOS is mapped in memory. After its
+// execution, the BIOS is unmapped and can't be remapped. The BIOS is
+// contained in src/mem/bios.rs, with comments.
+//
 const BIOS_BEG_ADDR: u16 = 0x0000;
 const BIOS_END_ADDR: u16 = 0x00FF;
+
 
 const VRAM_BEG_ADDR: u16 = 0x8000;
 const VRAM_END_ADDR: u16 = 0x9fff;
 const VRAM_LEN:usize = (VRAM_END_ADDR - VRAM_BEG_ADDR + 1) as usize;
 
+// Working RAM:
+//
+// This region represents the internal memory of the GameBoy. This is
+// used by all games, especially those without memory banks on their
+// cartridge.
+//
 const WRAM_BEG_ADDR: u16 = 0xc000;
 const WRAM_END_ADDR: u16 = 0xdfff;
 const WRAM_LEN:usize = (WRAM_END_ADDR - WRAM_BEG_ADDR + 1) as usize;
+
+// Reserved RAM:
+//
+// This region echoes the Working RAM region. However, Nintendo recommended
+// that nobody uses this region. We still need to emulate this region since
+// some games did not listen to Nintendo.
+//
+const RRAM_BEG_ADDR: u16 = 0xe000;
+const RRAM_END_ADDR: u16 = 0xfdff;
+const RRAM_LEN: usize = (RRAM_END_ADDR - RRAM_BEG_ADDR + 1) as usize;
+
+// Zero RAM:
+//
+// Originally intended to be used as stack space, it is also used for
+// fast memory access since some instructions operating in the 0xFF00
+// to 0xFFFF range (e.g., LD (C), A) are fsaster than typical LD instrs.
+//
+const ZRAM_BEG_ADDR: u16 = 0xff80;
+const ZRAM_END_ADDR: u16 = 0xfffe;
+const ZRAM_LEN: usize = (ZRAM_END_ADDR - ZRAM_BEG_ADDR + 1) as usize;
 
 pub struct Mmu {
     is_bios_mapped: bool,
@@ -25,6 +58,7 @@ impl Mmu {
             is_bios_mapped: true,
             vram: [0x00; VRAM_LEN],
             wram: [0x00; WRAM_LEN],
+            zram: [0x00; ZRAM_LEN],
         };
     }
 
@@ -48,6 +82,9 @@ impl Mmu {
             },
             (_, WRAM_BEG_ADDR..=WRAM_END_ADDR) => {
                 self.wram[(addr - WRAM_BEG_ADDR) as usize]
+            },
+            (_, ZRAM_BEG_ADDR..=ZRAM_END_ADDR) => {
+                self.zram[(addr - ZRAM_BEG_ADDR) as usize]
             },
             _ => {
                 // The GameBoy returns 0x00 when nothing can be read at
@@ -79,6 +116,9 @@ impl Mmu {
             },
             WRAM_BEG_ADDR..=WRAM_END_ADDR => {
                 self.wram[(addr - WRAM_BEG_ADDR) as usize] = val;
+            },
+            ZRAM_BEG_ADDR..=ZRAM_END_ADDR => {
+                self.zram[(addr - ZRAM_BEG_ADDR) as usize] = val;
             },
             _ => {
                 /* NOP */
