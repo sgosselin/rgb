@@ -121,6 +121,13 @@ impl Cpu {
                     ncycles = opcode.ncycles.1;
                 }
             },
+            (1, 6, 6, _, _) => { // HALT
+                self._panic("HALT not implemented");
+            },
+            (1, _, _, _, _) => { // LD r[y], r[z]
+                let r = self._get_r8_from_r(mmu, opcode.z());
+                self._set_r8_from_r(mmu, opcode.y(), r);
+            }
             (2, 5, _, _, _) => { // XOR r[z]
                 self.regs.a ^= self._get_r8_from_r(mmu, opcode.z());
                 self.regs.set_flag(Flag::Z, self.regs.a == 0);
@@ -209,5 +216,5 @@ impl Cpu {
 mod tests {
     use super::*;
 
-    // TODO: write tests for cpu.
+    // TODO: write tests for each opcodes.
 }
