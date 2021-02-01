@@ -173,6 +173,9 @@ impl Cpu {
                 self.regs.set_flag(Flag::H, false);
                 self.regs.set_flag(Flag::C, false);
             },
+            (3, _, 1, 0, 1) => { // RET
+                self.regs.pc = self._stack_pop(mmu);
+            }
             (3, _, 1, _, 0) => { // POP rp2[p]
                 let nn = self._stack_pop(mmu);
                 self._set_r16_from_rp2(mmu, opcode.p(), nn);
