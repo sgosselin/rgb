@@ -75,6 +75,10 @@ impl Cpu {
                 let nn = self._fetch_next_word(mmu);
                 self._set_r16_from_rp(mmu, opcode.p(), nn);
             },
+            (0, _, 2, 2, 0) => { // LD (HL+), A
+                mmu.write_byte(self.regs.hl(), self.regs.a);
+                self.regs.inc_hl();
+            },
             (0, _, 2, 3, 0) => { // LD (HL-), A
                 mmu.write_byte(self.regs.hl(), self.regs.a);
                 self.regs.dec_hl();

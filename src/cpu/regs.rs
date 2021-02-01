@@ -26,6 +26,13 @@ impl Regs {
         return (res_msb, res_lsb);
     }
 
+    // Helper to increment a 16-bit (2x 8-bit) registers.
+    fn _inc_r16(msb: u8, lsb: u8) -> (u8, u8) {
+        let res_lsb = u8::wrapping_add(lsb, 1);
+        let res_msb = if res_lsb == 0x00 { u8::wrapping_add(msb, 1) } else { msb };
+        return (res_msb, res_lsb);
+    }
+
     pub fn af(&self) -> u16 { ((self.a as u16) << 8) + (self.f as u16) }
     pub fn bc(&self) -> u16 { ((self.b as u16) << 8) + (self.c as u16) }
     pub fn de(&self) -> u16 { ((self.d as u16) << 8) + (self.e as u16) }
@@ -33,20 +40,22 @@ impl Regs {
 
     pub fn dec_bc(&mut self) {
         let (msb, lsb) = Regs::_dec_r16(self.b, self.c);
-        self.b = msb;
-        self.c = lsb;
+        self.b = msb; self.c = lsb;
     }
 
     pub fn dec_de(&mut self) {
         let (msb, lsb) = Regs::_dec_r16(self.d, self.e);
-        self.d = msb;
-        self.e = lsb;
+        self.d = msb; self.e = lsb;
     }
 
     pub fn dec_hl(&mut self) {
         let (msb, lsb) = Regs::_dec_r16(self.h, self.l);
-        self.h = msb;
-        self.l = lsb;
+        self.h = msb; self.l = lsb;
+    }
+
+    pub fn inc_hl(&mut self) {
+        let (msb, lsb) = Regs::_inc_r16(self.h, self.l);
+        self.h = msb; self.l = lsb;
     }
 
     pub fn set_bc(&mut self, raw: u16) {
@@ -152,4 +161,20 @@ mod tests {
         regs.dec_hl();
         assert_eq!(regs.hl(), 0x00ff);
     }
+
+    #[test]
+    fn test_inc_r16() {
+        let mut regs = Regs::default();
+
+        regs.set_hl(0x00ff);
+        regs.inc_hl();
+        assert_eq!(regs.hl(), 0x0100);
+        regs.set_hl(0xffff);
+        regs.inc_hl();
+        assert_eq!(regs.hl(), 0x0000);
+        regs.set_hl(0x0101);
+        regs.inc_hl();
+        assert_eq!(regs.hl(), 0x0102);
+    }
+
 }
