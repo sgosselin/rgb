@@ -425,7 +425,15 @@ mod tests {
 
     #[test]
     fn test_alu_cp() {
-        // TODO
+        let mut mmu = Mmu::new();
+        let mut cpu = Cpu::new();
+
+        cpu.regs.a = 0x0f;
+        cpu._alu_cp(0x0f);
+        assert_eq!(cpu.regs.get_flag(Flag::Z), true);
+        assert_eq!(cpu.regs.get_flag(Flag::N), true);
+        assert_eq!(cpu.regs.get_flag(Flag::H), false);
+        assert_eq!(cpu.regs.get_flag(Flag::C), false);
     }
 
     #[test]
