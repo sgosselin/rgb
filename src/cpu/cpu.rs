@@ -122,11 +122,20 @@ impl Cpu {
                 self.regs.dec_hl();
             },
             (0, _, 4, _, _) => { // INC r[y]
-                let r = u8::wrapping_add(self._get_r8_from_r(mmu, opcode.y()), 1);
+                let n = self._get_r8_from_r(mmu, opcode.y());
+                let r = u8::wrapping_add(n, 1);
                 self._set_r8_from_r(mmu, opcode.y(), r);
                 self.regs.set_flag(Flag::Z, r == 0);
                 self.regs.set_flag(Flag::N, false);
-                self.regs.set_flag(Flag::H, (r & 0x0f) == 0x0f);
+                self.regs.set_flag(Flag::H, (n & 0x0f) == 0x0f);
+            },
+            (0, _, 5, _, _) => { // DEC r[y]
+                let n = self._get_r8_from_r(mmu, opcode.y());
+                let r = u8::wrapping_sub(n, 1);
+                self._set_r8_from_r(mmu, opcode.y(), r);
+                self.regs.set_flag(Flag::Z, r == 0);
+                self.regs.set_flag(Flag::N, true);
+                self.regs.set_flag(Flag::H, (n & 0x0f) == 0x00);
             },
             (0, _, 6, _, _) => { // LD r[y], n
                 let n = self._fetch_next_byte(mmu);
@@ -300,4 +309,26 @@ mod tests {
     use super::*;
 
     // TODO: write tests for each opcodes.
+
+    #[test]
+    fn test_dec_ry() {
+        let mut mmu = Mmu::new();
+        let mut cpu = Cpu::new();
+        let opcode_dec_b = Opcode::from(false, 0x05)
+            .unwrap();
+
+        cpu.regs.b = 0x00;
+        cpu._run_opcode_un(&mut mmu, opcode_dec_b);
+        assert_eq!(cpu.regs.b, 0xff);
+        assert_eq!(cpu.regs.get_flag(Flag::Z), false);
+        assert_eq!(cpu.regs.get_flag(Flag::N), true);
+        assert_eq!(cpu.regs.get_flag(Flag::H), true);
+
+        cpu.regs.b = 0x01;
+        cpu._run_opcode_un(&mut mmu, opcode_dec_b);
+        assert_eq!(cpu.regs.b, 0x00);
+        assert_eq!(cpu.regs.get_flag(Flag::Z), true);
+        assert_eq!(cpu.regs.get_flag(Flag::N), true);
+        assert_eq!(cpu.regs.get_flag(Flag::H), false);
+    }
 }
