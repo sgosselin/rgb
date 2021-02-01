@@ -84,6 +84,9 @@ impl Mmu {
             (_, WRAM_BEG_ADDR..=WRAM_END_ADDR) => {
                 self.wram[(addr - WRAM_BEG_ADDR) as usize]
             },
+            (_, RRAM_BEG_ADDR..=RRAM_END_ADDR) => {
+                self.wram[(addr - RRAM_BEG_ADDR) as usize]
+            },
             (_, ZRAM_BEG_ADDR..=ZRAM_END_ADDR) => {
                 self.zram[(addr - ZRAM_BEG_ADDR) as usize]
             },
@@ -118,6 +121,9 @@ impl Mmu {
             WRAM_BEG_ADDR..=WRAM_END_ADDR => {
                 self.wram[(addr - WRAM_BEG_ADDR) as usize] = val;
             },
+            RRAM_BEG_ADDR..=RRAM_END_ADDR => {
+                self.wram[(addr - RRAM_BEG_ADDR) as usize] = val;
+            }
             ZRAM_BEG_ADDR..=ZRAM_END_ADDR => {
                 self.zram[(addr - ZRAM_BEG_ADDR) as usize] = val;
             },
@@ -143,24 +149,20 @@ mod tests {
     #[test]
     fn test_read_byte() {
         let mmu = Mmu::new();
-
         assert_eq!(mmu.read_byte(0x00), 0x31); 
     }
 
     #[test]
     fn test_read_word() {
         let mmu = Mmu::new();
-
         assert_eq!(mmu.read_word(0x01), 0xfffe); 
     }
 
     #[test]
     fn test_bios() {
         let mut mmu = Mmu::new();
-
         assert_eq!(mmu.is_bios_mapped(), true);
         assert_eq!(mmu.read_byte(0x00), 0x31); 
-
         mmu.unmap_bios();
         assert_eq!(mmu.read_byte(0x00), 0x00);
     }
@@ -168,10 +170,8 @@ mod tests {
     #[test]
     fn test_write_read_byte() {
         let mut mmu = Mmu::new();
-
         mmu.write_byte(WRAM_BEG_ADDR, 0x42);
         assert_eq!(mmu.read_byte(WRAM_BEG_ADDR), 0x42);
-
         // BIOS is not writtable.
         mmu.write_byte(BIOS_BEG_ADDR, 0x42);
         assert_ne!(mmu.read_byte(BIOS_BEG_ADDR), 0x42);
@@ -180,9 +180,37 @@ mod tests {
     #[test]
     fn test_write_read_word() {
         let mut mmu = Mmu::new();
-
         mmu.write_word(WRAM_BEG_ADDR, 0x1020);
         assert_eq!(mmu.read_word(WRAM_BEG_ADDR), 0x1020);
     }
 
+    #[test]
+    fn test_wram() {
+        let mut mmu = Mmu::new();
+        for addr in WRAM_BEG_ADDR..=WRAM_END_ADDR {
+            mmu.write_byte(addr, 0x10);
+            assert_eq!(mmu.read_byte(addr), 0x10);
+        }
+    }
+
+    #[test]
+    fn test_rram() {
+        let mut mmu = Mmu::new();
+        for rram_addr in RRAM_BEG_ADDR..=RRAM_END_ADDR {
+            mmu.write_byte(rram_addr, 0x10);
+            // Calculate the corresponding address in wram; verify RRAM
+            // echoes WRAM.
+            let wram_addr = WRAM_BEG_ADDR + (rram_addr - RRAM_BEG_ADDR);
+            assert_eq!(mmu.read_byte(wram_addr), 0x10);
+        }
+    }
+
+    #[test]
+    fn test_zram() {
+        let mut mmu = Mmu::new();
+        for addr in ZRAM_BEG_ADDR..=ZRAM_END_ADDR {
+            mmu.write_byte(addr, 0x10);
+            assert_eq!(mmu.read_byte(addr), 0x10);
+        }
+    }
 }
