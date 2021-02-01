@@ -24,7 +24,10 @@ impl Cpu {
 
     /// Steps the CPU through a fetch/decode/execute cycle.
     pub fn step(&mut self, mmu: &mut Mmu) -> usize {
-        // If the CPU is halted, execute a NOP.
+        // The CPU can halt upon executing the HALT instruction,
+        // or decoding a unknown opcode. In which case, the CPU
+        // will not make further progress and just execute NOP
+        // instructions.
         if self.is_halted {
             return 1;
         }
