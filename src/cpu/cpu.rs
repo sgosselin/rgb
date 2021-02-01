@@ -71,12 +71,13 @@ impl Cpu {
         let mut ncycles = opcode.ncycles.0;
 
         let res = match (opcode.x(), opcode.y(), opcode.z(), opcode.p(), opcode.q()) {
-            (3, 1, 3, _, _) => {
-                self.next_opcode_is_cb = true;
-            },
             (0, _, 1, _, 0) => { // LD rp[p], nn
                 let nn = self._fetch_next_word(mmu);
                 self._set_r16_from_rp(mmu, opcode.p(), nn);
+            },
+            (0, _, 2, 3, 0) => { // LD (HL-), A
+                mmu.write_byte(self.regs.hl(), self.regs.a);
+                self.regs.dec_hl();
             },
             (2, 5, _, _, _) => { // XOR r[z]
                 self.regs.a ^= self._get_r8_from_r(mmu, opcode.z());
@@ -84,6 +85,9 @@ impl Cpu {
                 self.regs.set_flag(Flag::N, false);
                 self.regs.set_flag(Flag::H, false);
                 self.regs.set_flag(Flag::C, false);
+            },
+            (3, 1, 3, _, _) => {
+                self.next_opcode_is_cb = true;
             },
             _ => {
                 self._panic("un-prefixed opcode not implemented");
