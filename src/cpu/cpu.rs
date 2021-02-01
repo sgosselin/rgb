@@ -5,6 +5,7 @@ use crate::mem::{Mmu};
 #[derive(Default)]
 /// Represents the LR35902 CPU (GameBoy's CPU).
 pub struct Cpu {
+    is_halted: bool,
     next_opcode_is_cb: bool,
     curr_opcode: Option<&'static Opcode>,
     regs: Regs,
@@ -14,6 +15,7 @@ impl Cpu {
     /// Create a new CPU object.
     pub fn new() -> Cpu {
         return Cpu {
+            is_halted: false,
             next_opcode_is_cb: false,
             curr_opcode: None,
             regs: Regs::default(),
@@ -22,6 +24,11 @@ impl Cpu {
 
     /// Steps the CPU through a fetch/decode/execute cycle.
     pub fn step(&mut self, mmu: &mut Mmu) -> usize {
+        // If the CPU is halted, execute a NOP.
+        if self.is_halted {
+            return 1;
+        }
+
         self.curr_opcode = Opcode::from(
             self.next_opcode_is_cb, self._fetch_next_byte(mmu));
         if self.curr_opcode.is_none() {
@@ -136,7 +143,7 @@ impl Cpu {
                 }
             },
             (1, 6, 6, _, _) => { // HALT
-                self._panic("HALT not implemented");
+                self.is_halted = true;
             },
             (1, _, _, _, _) => { // LD r[y], r[z]
                 let r = self._get_r8_from_r(mmu, opcode.z());
