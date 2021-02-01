@@ -66,14 +66,7 @@ impl Cpu {
 
         match (opcode.x(), opcode.y()) {
             (0, 2) => { // RL r[z]
-                // TODO: consider moving this into an "ALU" dispatch table function.
-                let n = self._get_r8_from_r(mmu, opcode.z());
-                let c = ((n & 0x80) >> 7) == 0x01;
-                let r = ((n << 1) + u8::from(self.regs.get_flag(Flag::C)));
-                self.regs.set_flag(Flag::Z, r == 0x00);
-                self.regs.set_flag(Flag::N, false);
-                self.regs.set_flag(Flag::C, c);
-                self.regs.set_flag(Flag::H, false);
+                let n = self._alu_rl_d8(self._get_r8_from_r(mmu, opcode.z()));
                 self._set_r8_from_r(mmu, opcode.z(), n);
             },
             (1, _) => { // BIT y, r[z]
@@ -129,6 +122,10 @@ impl Cpu {
                 let n = self._fetch_next_byte(mmu);
                 self._set_r8_from_r(mmu, opcode.y(), n);
             },
+            (0, 2, 7, _, _) => { // RLA
+                let n = self._alu_rl_d8(self.regs.a);
+                self._set_r8_from_r(mmu, opcode.z(), n);
+            },
             (0, 4..=7, 0, _, _) => { // JR cc[y-4], d
                 let d8 = self._fetch_next_byte(mmu) as i8;
                 let pc = i32::wrapping_add(self.regs.pc as i32, d8 as i32) as u16;
@@ -177,6 +174,17 @@ impl Cpu {
         };
 
         return ncycles;
+    }
+
+    fn _alu_rl_d8(&mut self, d8: u8) -> u8 {
+        let c = ((d8 & 0x80) >> 7) == 0x01;
+        let r = ((d8 << 1) + u8::from(self.regs.get_flag(Flag::C)));
+        self.regs.set_flag(Flag::Z, r == 0x00);
+        self.regs.set_flag(Flag::N, false);
+        self.regs.set_flag(Flag::C, c);
+        self.regs.set_flag(Flag::H, false);
+
+        return r;
     }
 
     fn _get_res_from_cc(&self, cc: u8) -> bool {
