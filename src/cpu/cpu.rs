@@ -241,6 +241,16 @@ impl Cpu {
         };
     }
 
+    fn _get_r16_from_rp(&mut self, mmu: &mut Mmu, rp: u8) -> u16 {
+        return match rp {
+            0 => self.regs.bc(),
+            1 => self.regs.de(),
+            2 => self.regs.hl(),
+            3 => self.regs.sp,
+            _ => self._panic("impossible <rp> index"),
+        };
+    }
+
     fn _get_r16_from_rp2(&mut self, mmu: &mut Mmu, rp2: u8) -> u16 {
         return match rp2 {
             0 => self.regs.bc(),
