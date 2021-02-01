@@ -331,4 +331,34 @@ mod tests {
         assert_eq!(cpu.regs.get_flag(Flag::N), true);
         assert_eq!(cpu.regs.get_flag(Flag::H), false);
     }
+
+    #[test]
+    fn test_inc_ry() {
+        let mut mmu = Mmu::new();
+        let mut cpu = Cpu::new();
+        let opcode_inc_b = Opcode::from(false, 0x04)
+            .unwrap();
+
+        cpu.regs.b = 0x00;
+        cpu._run_opcode_un(&mut mmu, opcode_inc_b);
+        assert_eq!(cpu.regs.b, 0x01);
+        assert_eq!(cpu.regs.get_flag(Flag::Z), false);
+        assert_eq!(cpu.regs.get_flag(Flag::N), false);
+        assert_eq!(cpu.regs.get_flag(Flag::H), false);
+
+        cpu.regs.b = 0x0f;
+        cpu._run_opcode_un(&mut mmu, opcode_inc_b);
+        assert_eq!(cpu.regs.b, 0x10);
+        assert_eq!(cpu.regs.get_flag(Flag::Z), false);
+        assert_eq!(cpu.regs.get_flag(Flag::N), false);
+        assert_eq!(cpu.regs.get_flag(Flag::H), true);
+
+        cpu.regs.b = 0xff;
+        cpu._run_opcode_un(&mut mmu, opcode_inc_b);
+        assert_eq!(cpu.regs.b, 0x00);
+        assert_eq!(cpu.regs.get_flag(Flag::Z), true);
+        assert_eq!(cpu.regs.get_flag(Flag::N), false);
+        assert_eq!(cpu.regs.get_flag(Flag::H), true);
+    }
+
 }
