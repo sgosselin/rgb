@@ -422,4 +422,41 @@ mod tests {
         cpu._run_opcode_un(&mut mmu, opcode_inc_hl);
         assert_eq!(cpu.regs.hl(), 0x0000);
     }
+
+    #[test]
+    fn test_alu_cp() {
+        // TODO
+    }
+
+    #[test]
+    fn test_alu_rl() {
+        // TODO
+    }
+
+    #[test]
+    fn test_alu_sub() {
+        // TODO
+    }
+
+    #[test]
+    fn test_alu_xor() {
+        let mut mmu = Mmu::new();
+        let mut cpu = Cpu::new();
+
+        cpu.regs.a = 0x0f;
+        cpu._alu_xor(0xf0);
+        assert_eq!(cpu.regs.a, 0xff);
+        assert_eq!(cpu.regs.get_flag(Flag::Z), false);
+        assert_eq!(cpu.regs.get_flag(Flag::N), false);
+        assert_eq!(cpu.regs.get_flag(Flag::H), false);
+        assert_eq!(cpu.regs.get_flag(Flag::C), false);
+
+        cpu.regs.a = 0x0f;
+        cpu._alu_xor(0x0f);
+        assert_eq!(cpu.regs.a, 0x00);
+        assert_eq!(cpu.regs.get_flag(Flag::Z), true);
+        assert_eq!(cpu.regs.get_flag(Flag::N), false);
+        assert_eq!(cpu.regs.get_flag(Flag::H), false);
+        assert_eq!(cpu.regs.get_flag(Flag::C), false);
+    }
 }
