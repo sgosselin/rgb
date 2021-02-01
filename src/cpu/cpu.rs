@@ -64,8 +64,19 @@ impl Cpu {
         // variable below mutable.
         let mut ncycles = opcode.ncycles.0;
 
-        match opcode.x() {
-            1 => { // BIT y, r[z]
+        match (opcode.x(), opcode.y()) {
+            (0, 2) => { // RL r[z]
+                // TODO: consider moving this into an "ALU" dispatch table function.
+                let n = self._get_r8_from_r(mmu, opcode.z());
+                let c = ((n & 0x80) >> 7) == 0x01;
+                let r = ((n << 1) + u8::from(self.regs.get_flag(Flag::C)));
+                self.regs.set_flag(Flag::Z, r == 0x00);
+                self.regs.set_flag(Flag::N, false);
+                self.regs.set_flag(Flag::C, c);
+                self.regs.set_flag(Flag::H, false);
+                self._set_r8_from_r(mmu, opcode.z(), n);
+            },
+            (1, _) => { // BIT y, r[z]
                 let r = self._get_r8_from_r(mmu, opcode.z());
                 self.regs.set_flag(Flag::Z, (r & (1 << opcode.y())) == 0);
                 self.regs.set_flag(Flag::N, false);
