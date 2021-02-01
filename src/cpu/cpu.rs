@@ -209,6 +209,17 @@ impl Cpu {
         };
     }
 
+    fn _stack_push(&mut self, mmu: &mut Mmu, word: u16) {
+        self.regs.sp = u16::wrapping_sub(self.regs.sp, 2);
+        mmu.write_word(self.regs.sp, word);
+    }
+
+    fn _stack_pop(&mut self, mmu: &mut Mmu) -> u16 {
+        let res = self.read_word(self.regs.sp);
+        self.regs.sp = u16::wrapping_add(self.regs.sp, 2);
+        return res;
+    }
+
     // Dumps the CPU state and exits.
     fn _panic(&self, reason: &str) -> ! {
         println!("=============== cpu panic ===============");
