@@ -57,8 +57,26 @@ impl Cpu {
 
     // Runs a cb-prefixed opcode.
     fn _run_opcode_cb(&mut self, mmu: &mut Mmu, opcode: &Opcode) -> usize {
-        self._panic("cb-prefixed opcode not implemented");
-        0
+        // Some instructions take a different number of cycles depending
+        // on whether memory accesses were successful, or branches taken.
+        // The dispatch code below will update the number of cycles if it
+        // is different from the 'default' path. As such, we will have the
+        // variable below mutable.
+        let mut ncycles = opcode.ncycles.0;
+
+        match opcode.x() {
+            1 => { // BIT y, r[z]
+                let r = self._get_r8_from_r(mmu, opcode.z());
+                self.regs.set_flag(Flag::Z, (r & (1 << opcode.y())) == 0);
+                self.regs.set_flag(Flag::N, false);
+                self.regs.set_flag(Flag::H, true);
+            },
+            _ => {
+                self._panic("cb-prefixed opcode not implemented");
+            },
+        };
+
+        return ncycles;
     }
 
     // Runs a un-prefixed opcode.
@@ -70,7 +88,7 @@ impl Cpu {
         // variable below mutable.
         let mut ncycles = opcode.ncycles.0;
 
-        let res = match (opcode.x(), opcode.y(), opcode.z(), opcode.p(), opcode.q()) {
+        match (opcode.x(), opcode.y(), opcode.z(), opcode.p(), opcode.q()) {
             (0, _, 1, _, 0) => { // LD rp[p], nn
                 let nn = self._fetch_next_word(mmu);
                 self._set_r16_from_rp(mmu, opcode.p(), nn);
