@@ -93,6 +93,12 @@ impl Cpu {
                 let nn = self._fetch_next_word(mmu);
                 self._set_r16_from_rp(mmu, opcode.p(), nn);
             },
+            (0, _, 2, 0, 1) => { // LD A,(BC)
+                self.regs.a = mmu.read_byte(self.regs.bc());
+            },
+            (0, _, 2, 1, 1) => { // LD A,(DE)
+                self.regs.a = mmu.read_byte(self.regs.de());
+            },
             (0, _, 2, 2, 0) => { // LD (HL+), A
                 mmu.write_byte(self.regs.hl(), self.regs.a);
                 self.regs.inc_hl();
