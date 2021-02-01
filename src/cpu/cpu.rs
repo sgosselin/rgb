@@ -150,6 +150,11 @@ impl Cpu {
                 let n = self._alu_rl(self.regs.a);
                 self._set_r8_from_r(mmu, opcode.z(), n);
             },
+            (0, 3, 0, _, _) => { // JR d
+                let d8 = self._fetch_next_byte(mmu) as i8;
+                let pc = (self.regs.pc as i32).wrapping_add(d8 as i32) as u16;
+                self.regs.pc = pc;
+            },
             (0, 4..=7, 0, _, _) => { // JR cc[y-4], d
                 let d8 = self._fetch_next_byte(mmu) as i8;
                 let pc = i32::wrapping_add(self.regs.pc as i32, d8 as i32) as u16;
