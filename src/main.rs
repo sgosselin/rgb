@@ -5,39 +5,18 @@ use clap::{Arg, App};
 mod cpu;
 mod dbg;
 mod mem;
+mod sys;
 mod vid;
 
-struct MyApp {
-    cpu: cpu::Cpu,
-    mmu: mem::Mmu,
-    is_running: bool,
-}
-
-impl MyApp {
-    pub fn new() -> MyApp {
-        return MyApp {
-            cpu: cpu::Cpu::new(),
-            mmu: mem::Mmu::new(),
-            is_running: true,
-        };
-    }
-
-    pub fn step(&mut self) {
-        let ncycles = self.cpu.step(&mut self.mmu);
-        self.mmu.gpu.step(ncycles);
-    }
-}
-
 fn app_tui() {
-    let mut app = MyApp::new();
     // TODO.
 }
 
 fn app_cli() {
-    let mut app = MyApp::new();
+    let mut sys = sys::System::new();
 
-    while app.is_running {
-        app.step();
+    loop {
+        sys.step();
     }
 }
 
