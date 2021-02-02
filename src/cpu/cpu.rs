@@ -205,6 +205,10 @@ impl Cpu {
                 let nn = self._fetch_next_word(mmu);
                 mmu.write_byte(nn, self.regs.a);
             },
+            (3, 6, 0, _, _) => { // LDH A, (n)
+                let n = self._fetch_next_byte(mmu) as u16;
+                self.regs.a = mmu.read_byte(0xff00 + n);
+            },
             (3, 7, _, _, _) => { // CP d8
                 let n = self._fetch_next_byte(mmu);
                 self._alu_cp(n);
