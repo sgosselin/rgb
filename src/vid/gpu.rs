@@ -18,3 +18,13 @@ enum Mode {
 pub struct Gpu {
     curr_mode: Mode,
 }
+
+impl Gpu {
+
+    /// Creates a new GPU object.
+    pub fn new() -> Gpu {
+        return Gpu {
+            curr_mode: Mode::Mode0,
+        };
+    }
+}

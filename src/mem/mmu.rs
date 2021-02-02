@@ -1,4 +1,5 @@
 use crate::dbg::log;
+use crate::vid::{Gpu};
 use super::bios::{BIOS};
 
 // BIOS:
@@ -45,11 +46,23 @@ const ZRAM_BEG_ADDR: u16 = 0xff80;
 const ZRAM_END_ADDR: u16 = 0xfffe;
 const ZRAM_LEN: usize = (ZRAM_END_ADDR - ZRAM_BEG_ADDR + 1) as usize;
 
+/// Represents the memory interconnect of the GameBoy.
+///
+/// In order to simplify the design, the memory interconnect (here, MMU) contains the
+/// memory mapped I/O devices. The GameBoy contains multiple I/O devices, such as the
+/// PPU/GPU.
+///
+/// Each I/O device has its memory mapped into the address space. They are usually
+/// registers specific to this device. Writes & reads operating on the I/O devices
+/// are delegated to each device accordingly.
+///
 pub struct Mmu {
     is_bios_mapped: bool,
     vram: [u8; VRAM_LEN],
     wram: [u8; WRAM_LEN],
     zram: [u8; ZRAM_LEN],
+
+    pub gpu: Gpu,
 }
 
 impl Mmu {
@@ -60,6 +73,7 @@ impl Mmu {
             vram: [0x00; VRAM_LEN],
             wram: [0x00; WRAM_LEN],
             zram: [0x00; ZRAM_LEN],
+            gpu: Gpu::new(),
         };
     }
 
