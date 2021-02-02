@@ -7,17 +7,37 @@ mod dbg;
 mod mem;
 mod vid;
 
+struct MyApp {
+    cpu: cpu::Cpu,
+    mmu: mem::Mmu,
+    is_running: bool,
+}
+
+impl MyApp {
+    pub fn new() -> MyApp {
+        return MyApp {
+            cpu: cpu::Cpu::new(),
+            mmu: mem::Mmu::new(),
+            is_running: true,
+        };
+    }
+
+    pub fn step(&mut self) {
+        let ncycles = self.cpu.step(&mut self.mmu);
+        self.mmu.gpu.step(ncycles);
+    }
+}
+
 fn app_tui() {
+    let mut app = MyApp::new();
     // TODO.
 }
 
 fn app_cli() {
-    let mut cpu = cpu::Cpu::new();
-    let mut mmu = mem::Mmu::new();
+    let mut app = MyApp::new();
 
-    loop {
-        let ncycles = cpu.step(&mut mmu);
-        mmu.gpu.step(ncycles);
+    while app.is_running {
+        app.step();
     }
 }
 
