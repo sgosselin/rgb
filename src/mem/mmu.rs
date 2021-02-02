@@ -49,11 +49,11 @@ const ZRAM_LEN: usize = (ZRAM_END_ADDR - ZRAM_BEG_ADDR + 1) as usize;
 /// Represents the memory interconnect of the GameBoy.
 ///
 /// In order to simplify the design, the memory interconnect (here, MMU) contains the
-/// memory mapped I/O devices. The GameBoy contains multiple I/O devices, such as the
+/// memory mapped I/O devices.  The GameBoy contains multiple I/O devices, such as the
 /// PPU/GPU.
 ///
-/// Each I/O device has its memory mapped into the address space. They are usually
-/// registers specific to this device. Writes & reads operating on the I/O devices
+/// Each I/O device has its memory mapped into the address space.  They are usually
+/// registers specific to this device.  Writes & reads operating on the I/O devices
 /// are delegated to each device accordingly.
 ///
 pub struct Mmu {

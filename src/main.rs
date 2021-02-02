@@ -11,6 +11,7 @@ fn main() {
     let mut mmu = mem::Mmu::new();
 
     loop {
-        cpu.step(&mut mmu);
+        let ncycles = cpu.step(&mut mmu);
+        mmu.gpu.step(ncycles);
     }
 }

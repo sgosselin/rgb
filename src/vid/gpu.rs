@@ -1,3 +1,5 @@
+use crate::dbg::log;
+
 /// Enumerates the possible mode for the GPU.
 ///
 /// Mode0: TODO
@@ -20,11 +22,17 @@ pub struct Gpu {
 }
 
 impl Gpu {
-
     /// Creates a new GPU object.
     pub fn new() -> Gpu {
         return Gpu {
             curr_mode: Mode::Mode0,
         };
+    }
+
+    /// Steps the GPU for a certain number of cycles.
+    pub fn step(&mut self, ncycles: usize) {
+        // TODO.
+
+        log::info("gpu", "step", &format!("ncycles={}", ncycles));
     }
 }
