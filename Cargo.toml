@@ -8,5 +8,4 @@ edition = "2018"
 
 [dependencies]
 clap = "~2.27.0"
-tui = "0.14"
-termion = "1.5"
+minifb = "0.19.2"
