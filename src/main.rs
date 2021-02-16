@@ -9,22 +9,23 @@ mod mem;
 mod sys;
 mod vid;
 
-const WIN_W: usize = 160;
-const WIN_H: usize = 144;
-
 fn app_gui() {
-    let mut buffer: Vec<u32> = vec![0; WIN_W * WIN_H];
+    let win_w = vid::gpu::SCREEN_W;
+    let win_h = vid::gpu::SCREEN_H;
+    let mut buffer: Vec<u32> = vec![0; win_w * win_h];
     let mut sys = sys::System::new();
 
-    let mut window = Window::new(".: RGB - GameBoy Emulator :. (ESC to exit)", WIN_W, WIN_H, WindowOptions::default())
+
+    let mut window = Window::new(".: RGB - GameBoy Emulator :. (ESC to exit)",
+            win_w, win_h, WindowOptions::default())
         .unwrap_or_else(|e| { panic!("{}", e); });
 
     // Limit to max ~60 fps update rate
     window.limit_update_rate(Some(std::time::Duration::from_micros(16600)));
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
-        window.update_with_buffer(&buffer, WIN_W, WIN_H)
-            .unwrap();
+        sys.mmu.gpu.copy_screen(&mut buffer[..]);
+        window.update_with_buffer(&buffer, win_w, win_h).unwrap();
     }
 }
 

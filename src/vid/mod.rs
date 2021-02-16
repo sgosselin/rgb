@@ -1,2 +1,2 @@
-mod gpu;
+pub mod gpu;
 pub use self::gpu::Gpu;

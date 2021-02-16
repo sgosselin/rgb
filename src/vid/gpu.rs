@@ -1,5 +1,8 @@
 use crate::dbg::log;
 
+pub const SCREEN_W: usize = 160;
+pub const SCREEN_H: usize = 144;
+
 /// Enumerates the possible mode for the GPU.
 ///
 /// ## Description of each modes
@@ -81,8 +84,20 @@ impl Gpu {
     }
 
 
-    /// Copies the screen region of the internal framebuffer.
-    pub fn copy_screen(&self, dst: &[u8]) {
-        // TODO
+    /// Renders the framebuffer into a screen region, according to the selected
+    /// palette.  Note the |dst| buffer is a 0RGB.  The upper 8-bits are ignored,
+    /// the next 8-bits are for the red channel, the next 8-bits afterwards for
+    /// the green channel, and the lower 8-bits for the blue channel.
+    pub fn copy_screen(&self, dst: &mut [u32]) {
+        assert_eq!(dst.len(), SCREEN_W * SCREEN_H);
+
+        // TODO: renders something real.
+        for y in 0..SCREEN_H {
+            for x in 0..SCREEN_W {
+                let r:u32 = (x as u32) % 255;
+                let ind = y * SCREEN_W + x;
+                dst[ind] = r << 16;
+            }
+        }
     }
 }
