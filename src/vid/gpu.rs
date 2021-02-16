@@ -32,7 +32,7 @@ use crate::dbg::log;
 ///            ^                                                      |
 ///            |                                                      v
 ///            +Yes                                        +----------+-----------+
-///        XXXXXXXXXX  No                                  |    Pixel Transfer    +<--+
+///        XXXXXXXXXX  No                                  |    Mode 3: Drawing   +<--+
 ///       X  Done ?  X+---------+                          +----------+-----------+   |
 ///        XXXXXXXXXX           |                                     |               |
 ///            ^                |                                     v               |
