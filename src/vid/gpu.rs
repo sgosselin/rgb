@@ -9,12 +9,12 @@ use crate::dbg::log;
 ///
 /// Mode 3: Drawing
 /// TODO
+///
 /// Mode 0: HBlank
 /// TODO
 ///
 /// Mode 1: VBlank
 /// TODO
-///
 ///
 /// ## State diagram of the modes and their transitions:
 ///
